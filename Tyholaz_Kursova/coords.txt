@@ -1,5 +1,8 @@
 Points:
-Point1: x1=200, y1=200
-Point2: x2=300, y2=200
-Point3: x3=300, y3=400
-Point4: x4=200, y4=400
+Point1: x1=150, y1=150
+Point2: x2=250, y2=150
+Point2: x2=300, y2=250
+Point1: x1=400, y1=250
+Point1: x1=400, y1=350
+Point1: x1=200, y1=400
+Point1: x1=100, y1=250

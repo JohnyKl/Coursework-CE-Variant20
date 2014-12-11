@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "Polygon.h"
-
+#include "Circle.h"
 
 //using namespace std;
 using namespace System;
@@ -159,33 +159,37 @@ void Polygon::drawPolygon(System::Windows::Forms::PaintEventArgs^  e)//функція, 
 void Polygon::drawEllipses(System::Windows::Forms::PaintEventArgs^ e)//фунція, що малює кола навколо вершин, що відповідають заданим завданням параметрам
 {
     int radius = Polygon::findTheLongestDiagonalLength()/2;//ініціалізація і оголошення змінної радіусу як половина найдовшої діагоналі
+	
+	createCircles();
+    
+	int *ptrToElement = (int*)Polygon::sidesLengths->data();//посилання на початок вектору зі значеннями довжин сторін
 
-    int *ptrToElement = (int*)Polygon::sidesLengths->data();//посилання на початок вектору зі значеннями довжин сторін
+	
+	for(int i = 1; i < circles->Length - 1; i++)
+	{
+		((Circle^)circles->GetValue(i))->checkDistanseToCloserVertexes(ptrToElement[i - 1],ptrToElement[i],maxLength);
+	}
 
-    for(int i = 1; i < Polygon::sidesLengths->size(); i++)
-    {
-        //оголошенняя і ініціалізація елементів, яким надаються значення довжин сторін справа та зліва від і-ї точки
-        int currentElementLeft  = ptrToElement[i - 1];
-        int currentElementRight = ptrToElement[i];
+	((Circle^)circles->GetValue(0))->checkDistanseToCloserVertexes(ptrToElement[1],ptrToElement[sidesLengths->size() - 1],maxLength);
+	((Circle^)circles->GetValue(circles->Length - 1))->checkDistanseToCloserVertexes(ptrToElement[0],ptrToElement[sidesLengths->size() - 2],maxLength);
 
-        //створення олівця стандартного кольору для малювання кіл
-        Pen^ pen = gcnew Pen(Color::Red, 3.0f);
+	for(int i = 0; i < circles->Length; i++)
+	{
+		((Circle^)circles->GetValue(i))->checkIntersection(points);
+		((Circle^)circles->GetValue(i))->drawEllipse(e);
+	}
+}
 
-        if (currentElementLeft/2 < radius || currentElementRight/2 < radius)//якщо колa будуть перетинатись, змінити колір олівця
-        {
-            pen = gcnew Pen(Color::Green, 3.0f);
-        }
-        if(currentElementLeft < Polygon::maxLength)//якщо довжина сторони відповідає заданій умові, намалювати коло навколо і-ї та попередньої вершини
-        {
-            Polygon::drawEllipse(e, pen, (Point)Polygon::points->GetValue(i),radius);
-            Polygon::drawEllipse(e, pen, (Point)Polygon::points->GetValue(i - 1),radius);
-        }
-        if(currentElementRight < Polygon::maxLength)//якщо довжина сторони відповідає заданій умові, намалювати коло навколо і-ї та наступної вершини
-        {
-            Polygon::drawEllipse(e, pen, (Point)Polygon::points->GetValue(i),radius);
-            Polygon::drawEllipse(e, pen, (Point)Polygon::points->GetValue(i + 1),radius);
-        }
-    }
+bool Polygon::checkIntersection(Point centerA, Point centerB, int radius)//перевірити, чи перетинаються вписані кола
+{
+	int len = System::Math::Sqrt((centerA.X - centerB.X)*(centerA.X - centerB.X) + (centerA.Y - centerB.Y)*(centerA.Y - centerB.Y));//обрахувати відстань між центрами кіл
+
+	if(len <= radius*2 && len > 0)//кола перетинаються, якщо відстань між їх точками знаходиться між сумою та різницею їх радіусів
+	{
+		return true;
+	}	
+
+	return false;
 }
 
 void Polygon::drawEllipse(System::Windows::Forms::PaintEventArgs^ e, Pen^ pen, Point a, int radius)//намалювати коло з центром у заданій вершині відповідного радіусу
@@ -249,3 +253,15 @@ int Polygon::findTheLongestDiagonalLength()//функція, що знаходить довжину найдо
     return theLongestDiagonalLength;
 }
 
+void Polygon::createCircles()
+{
+	circles = Array::CreateInstance(Circle::typeid, points->Length);
+	int radius = Polygon::findTheLongestDiagonalLength()/2;//ініціалізація і оголошення змінної радіусу як половина найдовшої діагоналі
+
+	for(int i = 0; i < points->Length; i++)
+	{
+		Circle ^newCircle = gcnew Circle((Point^) points->GetValue(i), radius);
+
+		circles->SetValue(newCircle, i);
+	}
+}

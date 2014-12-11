@@ -14,6 +14,7 @@ namespace Tyholaz_Kursova
 		size_t anglesNumber;
 		int maxLength;
 		System::Array ^points;
+		System::Array ^circles;
 		vector<int> *sidesLengths;
 		vector<int> *diagonalsLengths;
 
@@ -22,6 +23,9 @@ namespace Tyholaz_Kursova
         int countVectorAbs(System::Drawing::Point ^pA, System::Drawing::Point ^pB);
 		int findTheLongestDiagonalLength();
 		void findCoordsInLine(string line, int* coords);
+		bool checkIntersection(System::Drawing::Point centerA, System::Drawing::Point centerB, int radius);
+
+		void createCircles();
 	public:
 		Polygon(void);
 
